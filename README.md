@@ -1,59 +1,104 @@
 <div align="center">
 
-# 🐱 たまといっしょ
+# 🐱 Tama to Issho（たまといっしょ）
 
-### ボケる猫「たま」と、毎日たのしく脳と骨を元気にする高齢者見守りアプリ
+### A boke-cat AI companion that keeps Japan's home-alone seniors sharp, active & connected.
+ボケる猫「たま」と、毎日たのしく脳と骨を元気にする高齢者見守りAIエージェント
 
-**Gemini AI Hackathon 2026 提出作品 — 伊東 徹**
+**Gemini AI Hackathon 2026 — Submission by Toru Ito（伊東 徹）**
 
-🌐 **Live Demo (Cloud Run):** https://service-519694522769.us-west1.run.app
+🌐 **Live Demo (Google Cloud Run):** https://service-519694522769.us-west1.run.app
 
 </div>
 
 ---
 
-## 💡 コンセプト
+## 🎯 The Problem ／ 課題
 
-高齢の祖父母が、毎日たのしく続けられる「見守り × 認知予防 × 骨粗鬆症予防」アプリ。
+In Japan, young people move to Tokyo for work while their parents and grandparents
+stay behind in the countryside, **living alone**. Simply by living an ordinary daily life,
+these seniors gradually lose conversation, movement, and human contact — and end up
+**socially isolated**, accelerating cognitive decline and physical frailty.
 
-主役は、ちょっとおっちょこちょいな猫 **「たま」**。たまが毎日 **ボケ** て、おじいちゃん・おばあちゃんが **ツッコむ** ことで、自然と脳が刺激されます。会話・お散歩の様子は離れて暮らす家族にそっと共有され、「今日も元気そう」という安心を届けます。
+> 若者は東京へ。地方に残された親・祖父母は一人暮らしの中で、“普通に生活しているだけ”で
+> 会話・運動・人との接点を失い、社会的に孤立し、認知機能と運動機能が落ちていく。
 
-> 例：「お天気がいいから、お気に入りの毛糸玉に日焼け止めを塗ってあげたにゃん！」
+**The danger isn't illness — it's a day with no one to talk to.**
+病気の前に、“話す相手のいない毎日”そのものがリスクになる。
 
-## ✨ 主な機能
+---
 
-| 機能 | 内容 | 使っている技術 |
+## 💡 The Solution ／ 解決
+
+Meet **Tama**, a slightly clumsy cat who makes a gentle joke (*boke*) every day.
+The senior *retorts* (*tsukkomi*) — and that one playful exchange becomes natural brain training.
+A habit-forming AI agent that wraps health, movement, joy, and family connection into a cat you want to see every day.
+
+たまが毎日ボケる →「ツッコミ」を入れる、その一往復が自然な脳トレに。
+健康・運動・楽しみ・家族のつながりを、可愛い猫の習慣に包んで届ける**習慣化AIエージェント**。
+
+---
+
+## ✨ Features ／ 主な機能
+
+| Feature | What it does | Powered by |
 |---|---|---|
-| 🧠 **認知予防（ボケ→ツッコミ）** | たまが毎日その場でボケを生成。今日の**実際の天気**に連動して内容が変わる | Gemini API + **Google Search グラウンディング** |
-| 🦴 **骨粗鬆症予防（たまとお散歩）** | お散歩タイマー → 歩いた時間・推定歩数・**消費カロリー**を計算。日光浴とビタミンDを促す | METs(3.0)による消費エネルギー計算 |
-| 🎧 **今日の一曲（たまDJ）** | ツッコむと、たまがDJになって今日の気分に合う名曲のYouTube URLをおすすめ | Gemini API + **Google Search グラウンディング** |
-| 👨‍👩‍👧 **家族見守り** | 会話・お散歩・お昼ごはんの記録を家族と共有。「合図を送る」でゆるくつながる | — |
+| 🧠 **Cognitive — Boke → Tsukkomi** ／ 認知予防 | Tama generates a fresh joke every day, **grounded in today's real weather**. The retort sparks cognition. | **Gemini API** + **Google Search Grounding** |
+| 🦴 **Bones — Walk with Tama** ／ 骨粗鬆症予防 | A walk timer computes time, steps & **calories (METs 3.0)**; nudges sunlight & vitamin D for bone health. | Gemini API + METs model |
+| 🎧 **Joy — Tama the DJ** ／ 今日の一曲 | After the retort, Tama spins "today's song" — a **real YouTube link** matched to mood & weather. | **Gemini API** + **Google Search Grounding** |
+| 👨‍👩‍👧 **Family Circle** ／ 家族見守り | Chats, walks & meals are shared with distant family. "She's doing well today." | Activity timeline |
 
-## 🛠 技術構成
+> **Two independent Search Grounding pipelines** (weather **and** music) keep Tama tied to real-time, real-world data — not hallucinations.
 
-- **フロントエンド**: React 19 + Vite + TypeScript
-- **バックエンド**: Express (`server.ts`) — Gemini API キーをサーバー側に隠蔽し、クライアントに露出させない
-- **AI**: Google **Gemini API** ＋ **Google Search グラウンディング**（天気・選曲の2系統でリアルタイム情報を取得）
-- **デプロイ**: **Google Cloud Run**
+---
 
-## 👵 高齢者向けのこだわり
+## ☁️ Google Cloud Integration ／ Google Cloud 統合（審査基準①）
 
-- 特大フォント・極太の押し込み式ボタン・広いタップ範囲
-- 高コントラストな配色（ペールクリーム × テラコッタ）
-- ひらがな多めのやさしい日本語、音声読み上げ対応
+This project is built **end-to-end on Google's stack**:
 
-## 🚀 ローカル実行
+- **Gemini API** — generates every boke, conversational reply, health nudge, and song pick.
+- **Google Search Grounding ×2** — two separate grounded pipelines: (1) today's **live weather** → drives the daily joke & greeting; (2) **real song discovery** → returns an actual YouTube URL.
+- **Google Cloud Run** — the production deployment serving the live, mobile-ready app.
+- **Server-side key handling** — the `GEMINI_API_KEY` lives only in the Express backend (`server.ts`) and is **never exposed** to the browser.
 
-**前提:** Node.js
-
-```bash
-npm install
-# .env.local に GEMINI_API_KEY を設定
-npm run dev
+```
+[ React 19 + Vite ]  →  [ Express server ]  →  [ Gemini API ]
+   elderly-first UI       hides the API key      boke / reply / song
+        (mobile)                                      │
+                                                      ▼
+                                        [ Google Search Grounding ×2 ]
+                                          live weather  +  real songs
+                                                      │
+                                                      ▼
+                                          [ Google Cloud Run · live URL ]
 ```
 
 ---
 
+## 🛠 Tech Stack ／ 技術構成
+
+- **Frontend:** React 19 + Vite + TypeScript — large-type, high-contrast UI for ages 70–80+
+- **Backend:** Express (`server.ts`) — server-side Gemini calls, API key never exposed
+- **AI:** Google **Gemini API** + **Google Search Grounding** (weather & music)
+- **Deploy:** **Google Cloud Run** (live, runs on smartphones)
+
+## 👵 Designed for Seniors ／ 高齢者向けのこだわり
+
+- Extra-large fonts, thick tactile buttons, generous tap targets
+- High-contrast warm palette (pale cream × terracotta)
+- Gentle hiragana-rich Japanese, with read-aloud support
+
+## 🚀 Run Locally ／ ローカル実行
+
+```bash
+npm install
+# set GEMINI_API_KEY in .env.local
+npm run dev
+```
+**Prerequisite:** Node.js
+
+---
+
 <div align="center">
-Made with ❤️ for おじいちゃん・おばあちゃん ／ Gemini AI Hackathon 2026
+Made with ❤️ for おじいちゃん・おばあちゃん ／ Gemini AI Hackathon 2026 · Toru Ito
 </div>
