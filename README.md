@@ -52,6 +52,30 @@ A habit-forming AI agent that wraps health, movement, joy, and family connection
 
 ---
 
+## 🤖 Multi-Agent Orchestration ／ マルチエージェント連携（審査基準②：革新性）
+
+The daily **AI Watch-Over Report** is produced by **four specialised Gemini agents** that
+collaborate in sequence — a coordinator dispatches each agent and merges their outputs into
+one card. Each agent has a distinct role and reads the day's activity data.
+
+| Agent | Role |
+|---|---|
+| 🐱 **Conversation Agent (たま)** | The personality — daily weather-grounded boke & replies |
+| 🩺 **Health Concierge** | Reads today's walk/chat records → one gentle, prioritised health nudge |
+| 🎧 **DJ Agent** | Grounded song discovery → today's real YouTube pick |
+| ✉️ **Family Report Agent** | Synthesises the above into a reassuring summary for distant family |
+
+> 4つの専門エージェント（会話・健康コンシェルジュ・DJ・家族レポート）が順に連携し、
+> その日の記録を読んで1枚の「AI見守りレポート」を共同生成する。
+
+## 🎙️ Multimodal ／ マルチモーダル（審査基準②：革新性）
+
+- **Voice output (TTS):** every Tama utterance can be read aloud with a senior-tuned, slowed Japanese voice — a "🔊 read aloud" button on each agent card.
+- **Voice input (STT):** a giant mic button lets seniors *retort by speaking* — speech is recognised, transcribed, and sent to Tama hands-free. Ideal for users uncomfortable with keyboards.
+- Auto read-aloud is toggleable in Settings.
+
+---
+
 ## ☁️ Google Cloud Integration ／ Google Cloud 統合（審査基準①）
 
 This project is built **end-to-end on Google's stack**:
