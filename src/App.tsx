@@ -54,7 +54,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   userName: "おじいちゃん",
   voiceVolume: 80,
   textSize: "large", // Default to large for elder safety
-  notificationsEnabled: true
+  notificationsEnabled: true,
+  voiceSpeechEnabled: true
 };
 
 export default function App() {
@@ -164,14 +165,15 @@ export default function App() {
 
   // 3. Text to Speech meows & speech
   const speakText = (text: string) => {
-    if (settings.voiceVolume === 0) return;
+    if (settings.voiceVolume === 0 || settings.voiceSpeechEnabled === false) return;
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+      // Remove symbols or punctuation for smoother reading if needed, but standard TTS is usually fine
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      // High pitched sweet cute tone for Tama
-      utterance.pitch = 1.45;
-      utterance.rate = 1.05;
+      // High pitched sweet cute tone for Tama, but slightly slower for senior accessibility
+      utterance.pitch = 1.35;
+      utterance.rate = 0.88; // ゆっくり・はっきり
       utterance.volume = settings.voiceVolume / 100;
       window.speechSynthesis.speak(utterance);
     }
@@ -475,6 +477,8 @@ export default function App() {
                 settings={settings}
                 onSendWave={handleSendWave}
                 waveSent={waveSent}
+                weather={weather}
+                speakText={speakText}
               />
             )}
 

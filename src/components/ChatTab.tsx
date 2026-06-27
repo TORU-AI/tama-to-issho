@@ -6,7 +6,9 @@ import {
   RefreshCw,
   Loader2,
   Heart,
-  Music
+  Music,
+  Mic,
+  MicOff
 } from "lucide-react";
 import { ChatMessage, UserSettings, WeatherInfo } from "../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -32,6 +34,64 @@ export default function ChatTab({
 }: ChatTabProps) {
   const [inputText, setInputText] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  
+  // Speech Recognition integration for senior citizens
+  const [isListening, setIsListening] = useState(false);
+  const [recognitionError, setRecognitionError] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "ja-JP";
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setRecognitionError(null);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        setRecognitionError(event.error);
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setInputText(transcript);
+          // Automatically send voice recognition result to Tama
+          onSendAction('correct', transcript);
+        }
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [onSendAction]);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert("お使いのブラウザは音声入力に対応していません。Google Chromeなどのブラウザでお試しください。");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -234,7 +294,7 @@ export default function ChatTab({
             <CheckCircle2 className="w-8 h-8 stroke-[3]" />
             <span className="text-xl font-black">ツッコミを入れる</span>
           </button>
-
+ 
           {/* Option 2: Laugh with Tama (Emotional connection button - Sage Green) */}
           <button
             onClick={() => onSendAction('laugh')}
@@ -243,6 +303,49 @@ export default function ChatTab({
             <Smile className="w-8 h-8 stroke-[3]" />
             <span className="text-xl font-black">いっしょに笑う</span>
           </button>
+        </div>
+
+        {/* Multimodal Big Microphone Button for Senior Citizens */}
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={toggleListening}
+            className={`btn-press w-full min-h-[84px] rounded-3xl border-3 border-outline shadow-lg flex items-center justify-center gap-4 px-6 select-none cursor-pointer transition-all ${
+              isListening 
+                ? "bg-rose-500 text-white animate-pulse border-rose-700" 
+                : "bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300"
+            }`}
+          >
+            {isListening ? (
+              <>
+                <span className="relative flex h-6 w-6">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-6 w-6 bg-white flex items-center justify-center">
+                    <Mic className="w-4 h-4 text-rose-600 stroke-[3]" />
+                  </span>
+                </span>
+                <div className="text-left">
+                  <span className="text-[22px] font-black block">🎙️ 声を聞きとり中だにゃ…</span>
+                  <span className="text-sm font-bold opacity-90">話し終わると、たまに自動でお返事がいきますにゃ🐾</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center border-2 border-outline shadow-sm flex-shrink-0">
+                  <Mic className="w-6 h-6 stroke-[3]" />
+                </div>
+                <div className="text-left">
+                  <span className="text-[22px] font-black block text-amber-950">🎙️ 声でたまにお話しする</span>
+                  <span className="text-sm font-bold text-amber-900/80">ボタンを押して、大きめの声で話しかけてにゃ🐾</span>
+                </div>
+              </>
+            )}
+          </button>
+          {recognitionError && (
+            <p className="text-rose-600 text-sm font-bold text-center mt-1">
+              ⚠️ 音声入力エラー: もう一度ボタンを押して話してねにゃ🐾
+            </p>
+          )}
         </div>
 
         {/* Custom Text/Keyboard Input Form */}

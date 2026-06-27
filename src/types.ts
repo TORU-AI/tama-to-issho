@@ -35,4 +35,21 @@ export interface UserSettings {
   textSize: 'normal' | 'large' | 'huge';
   notificationsEnabled: boolean;
   weight?: number; // 体重(kg) for METs walking calorie calculation
+  voiceSpeechEnabled?: boolean; // 音声の自動読み上げオン/オフ
 }
+
+export interface CollaborativeSummary {
+  healthAdvice: {
+    title: string;
+    content: string;
+    priority: 'low' | 'medium' | 'high';
+  };
+  song: RecommendedSong;
+  familyReport: {
+    summary: string;
+    healthStatusLabel: string; // e.g., "元気いっぱい", "のんびり安静", "適度な運動"
+    familyMessage: string;
+  };
+  timestamp: string;
+}
+

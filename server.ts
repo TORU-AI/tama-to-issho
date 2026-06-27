@@ -466,6 +466,207 @@ Google検索（Google Search grounding）を使って、その実在する曲の
   }
 });
 
+/**
+ * 4. Multi-Agent Collaboration Endpoint
+ * Orchestrates 4 agents:
+ * - Tama (Conversation Agent)
+ * - Health Concierge Agent (Generates warm, osteo-prevention health advice)
+ * - DJ Agent (Selects nostalgic Showa songs tailored to today's mood/weather with Search Grounding)
+ * - Family Report Agent (Summarizes status and messages for family members)
+ */
+app.post("/api/agents/collaborate", async (req, res) => {
+  const { walkDuration, walkCalories, chatCount, weight, weatherCondition, userName } = req.body;
+
+  const numWalkDuration = Number(walkDuration || 0);
+  const numWalkCalories = Number(walkCalories || 0);
+  const numChatCount = Number(chatCount || 0);
+  const numWeight = Number(weight || 60);
+  const weatherText = String(weatherCondition || "晴れ");
+  const nameText = String(userName || "おじいちゃん");
+
+  // Pre-configured elegant fallback selection in case Gemini fails or experiences rate limits
+  let songFallbackList = FALLBACK_SONGS.general;
+  if (weatherText.includes("雨")) {
+    songFallbackList = FALLBACK_SONGS.rain;
+  } else if (weatherText.includes("晴") || weatherText.includes("快晴")) {
+    songFallbackList = FALLBACK_SONGS.sunny;
+  } else if (weatherText.includes("くもり") || weatherText.includes("曇")) {
+    songFallbackList = FALLBACK_SONGS.cloudy;
+  } else if (weatherText.includes("雪")) {
+    songFallbackList = FALLBACK_SONGS.snow;
+  }
+  const chosenFallbackSong = songFallbackList[Math.floor(Math.random() * songFallbackList.length)];
+  const fallbackSongObj = {
+    title: chosenFallbackSong.title,
+    artist: chosenFallbackSong.artist,
+    youtubeUrl: chosenFallbackSong.youtubeUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(chosenFallbackSong.title + " " + chosenFallbackSong.artist)}`,
+    commentary: chosenFallbackSong.commentary
+  };
+
+  const localFallbackResult = {
+    tamaComment: "今日も一日、お疲れ様だにゃ！いっしょに過ごせて、たまはとっても楽しかったにゃん🐾",
+    healthAdvice: numWalkDuration < 5 ? {
+      title: "お部屋の中でのびのびストレッチにゃ",
+      content: "今日はお散歩がのんびりペースだったみたいにゃ。お部屋の中で、深呼吸をしながら背筋をぐーっと伸ばしてみるにゃ🐾 骨や筋肉が刺激されて、全身がぽかぽか温まってくるにゃん！",
+      priority: "high"
+    } : {
+      title: "がんばった足腰のケアと水分補給にゃ",
+      content: "今日はお外で元気に歩けてとっても素晴らしいにゃ！がんばった足腰を優しくいたわるために、温かいお茶などをのんで水分補給をするにゃ🐾 ふくらはぎを軽くさするだけでも、翌朝の軽さが変わるにゃん！",
+      priority: "low"
+    },
+    song: fallbackSongObj,
+    familyReport: {
+      summary: `本日は会話が ${numChatCount}回、お散歩が ${numWalkDuration}分（消費エネルギー ${numWalkCalories}kcal）と、適度に活動的な一日でした。`,
+      healthStatusLabel: numWalkDuration >= 10 ? "元気いっぱい🐾" : "のんびり安静モード☕",
+      familyMessage: `${nameText}様は、今日もにこにこと穏やかにお過ごしです。お散歩もおこなって足腰をしっかりと動かされていました。たまもずっとお側について見守っておりますので、どうぞご安心くださいね。`
+    },
+    timestamp: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+  };
+
+  try {
+    const prompt = `あなたは「お年寄り見守り・対話アプリ」の裏側で動く【マルチエージェント・コーディネーター】です。
+ユーザー名: "${nameText}"
+
+本日のおじいちゃん・おばあちゃんの活動記録：
+- 今日の天気: "${weatherText}"
+- 会話回数: ${numChatCount}回
+- お散歩時間: ${numWalkDuration}分
+- お散歩での消費カロリー: ${numWalkCalories}kcal
+- 体重設定: ${numWeight}kg
+
+以下の4つの自律的なAIエージェントのペルソナになりきり、連携した出力をJSONフォーマットで返してください。
+
+1. 【たま（会話エージェント）】
+   - ペルソナ：少しおっちょこちょいだけど、優しくておじいちゃんが大好きな可愛い猫「たま」。
+   - タスク：今日の頑張りやおしゃべりに感謝し、心がじんわり温まるお疲れ様メッセージを作ります。
+   - 口調：語尾に「〜にゃ」「〜にゃん」をつけ、50文字以内のひらがな多めの話し言葉。
+
+2. 【健康コンシェルジュ・エージェント】
+   - ペルソナ：高齢者の骨粗鬆症やロコモ（運動器症候群）予防、水分補給、安全な室内運動知識に詳しい専門家。
+   - タスク：今日の歩行時間を見て、お年寄りに寄り添った優しく具体的な健康・運動のアドバイスを1つ考案します。
+   - 内容：歩行が少ない（10分未満）場合は「椅子に座ってできる足首回しや室内伸び」等を優しく提案し、よく歩いた場合は「ふくらはぎの軽い揉みほぐしや水分補給」等を勧めます。ひらがな多めで120文字以内。
+
+3. 【DJエージェント（DJたま）】
+   - ペルソナ：ちょっと粋で洒落た、温かい音楽通のDJ。
+   - タスク：今日の天気や、活動状況にぴったりの、実在する有名な日本の曲（昭和歌謡、昭和ポップス、懐かしのフォークソング、心温まる童謡など）を1曲セレクトします。
+   - Grounding要件：Google Searchを使って、その曲名・アーティスト名が正しく実在することを確認し、その曲のYouTube動画URLを検索して必ず埋め込んでください。
+   - 口調：紹介コメントは「今日の気分にはこの一曲、どうぞ召し上がれ♪」などの少し粋なDJ口調を含めてください（60文字〜100文字程度）。
+
+4. 【家族レポート・エージェント】
+   - ペルソナ：お年寄りの変化に寄り添い、離れて暮らす家族に様子を知らせる親切な見守り監査役。
+   - タスク：上記3つのエージェントの活動内容を統合し、家族が読んでおじいちゃん・おばあちゃんの状態が分かり、ホッと安心できる報告文を作成します。
+
+全ての項目を詳細に埋めて、日本語で出力してください。`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            tamaComment: {
+              type: Type.STRING,
+              description: "たま（会話エージェント）としての今日のお疲れ様セリフ（日本語・語尾に『にゃ』『にゃん』を含む、50文字以内）"
+            },
+            healthAdvice: {
+              type: Type.OBJECT,
+              description: "健康コンシェルジュ・エージェントからの骨粗鬆症・ロコモ予防などの健康アドバイス",
+              properties: {
+                title: {
+                  type: Type.STRING,
+                  description: "アドバイスの短いタイトル（日本語、15文字以内、例: 足首の軽いストレッチ、こまめな水分補給）"
+                },
+                content: {
+                  type: Type.STRING,
+                  description: "お年寄り向けの優しく具体的な健康・運動アドバイス（ひらがな多め、120文字程度）"
+                },
+                priority: {
+                  type: Type.STRING,
+                  enum: ["low", "medium", "high"],
+                  description: "アドバイスの重要度（活動量が少ない場合はhigh、十分に活動した場合はlow）"
+                }
+              },
+              required: ["title", "content", "priority"]
+            },
+            song: {
+              type: Type.OBJECT,
+              description: "DJエージェントによる、今日の歩数や天気に合わせた日本の有名な名曲の選曲",
+              properties: {
+                title: {
+                  type: Type.STRING,
+                  description: "おすすめする実在の有名な曲名（日本語）"
+                },
+                artist: {
+                  type: Type.STRING,
+                  description: "歌手・アーティスト名（日本語）"
+                },
+                youtubeUrl: {
+                  type: Type.STRING,
+                  description: "実在するその曲のYouTube動画URL。検索して見つかったURLを記入。見つからない場合は空で構いません。"
+                },
+                commentary: {
+                  type: Type.STRING,
+                  description: "DJたまとしての少し粋な曲紹介コメント。語尾に「どうぞ召し上がれ♪」などのDJ口調を含める。"
+                }
+              },
+              required: ["title", "artist", "youtubeUrl", "commentary"]
+            },
+            familyReport: {
+              type: Type.OBJECT,
+              description: "家族レポート・エージェントによる家族向けの見守り状況報告",
+              properties: {
+                summary: {
+                  type: Type.STRING,
+                  description: "本日の活動状態の客観的まとめ（日本語。例: 今日は会話が3回、お散歩が15分と適度に活動的でした）"
+                },
+                healthStatusLabel: {
+                  type: Type.STRING,
+                  description: "健康状態をあらわす短いラベル（例: 元気いっぱい、のんびり安静、マイペース、運動バッチリ）"
+                },
+                familyMessage: {
+                  type: Type.STRING,
+                  description: "離れて暮らす家族が読んでホッと安心できるような、たまからの優しいメッセージ（100文字前後）"
+                }
+              },
+              required: ["summary", "healthStatusLabel", "familyMessage"]
+            }
+          },
+          required: ["tamaComment", "healthAdvice", "song", "familyReport"]
+        },
+        tools: [{ googleSearch: {} }] // Enable Google Search for exact Showa song YouTube retrieval!
+      }
+    });
+
+    const text = response.text || "{}";
+    const data = JSON.parse(text);
+
+    // Validate and fall back song URLs if needed
+    if (!data.song) {
+      data.song = fallbackSongObj;
+    } else {
+      const s = data.song;
+      if (!s.title || !s.artist) {
+        data.song = fallbackSongObj;
+      } else if (!s.youtubeUrl || (!s.youtubeUrl.includes("youtube.com") && !s.youtubeUrl.includes("youtu.be"))) {
+        s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(s.title + " " + s.artist)}`;
+      }
+    }
+
+    data.timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+    res.json(data);
+  } catch (error) {
+    if (isQuotaError(error)) {
+      console.warn("⚠️ [Gemini API WARNING] Quota exceeded or Rate limited in /api/agents/collaborate. Using premium robust local fallback.");
+    } else {
+      console.error("❌ Multi-agent collaboration error:", error);
+    }
+    res.json(localFallbackResult);
+  }
+});
+
 // Setup Vite or Static File Serving
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {

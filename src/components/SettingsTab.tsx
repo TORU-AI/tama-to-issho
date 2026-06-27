@@ -49,6 +49,13 @@ export default function SettingsTab({
     onShowNotification(nextVal ? "お知らせをオンにしたにゃ！" : "お知らせをオフにしたにゃ！");
   };
 
+  const handleSpeechToggle = () => {
+    const nextVal = settings.voiceSpeechEnabled === false ? false : true;
+    const toggled = !nextVal;
+    onUpdateSettings({ voiceSpeechEnabled: toggled });
+    onShowNotification(toggled ? "たまの自動おしゃべりをオンにしたにゃ🐾🔊" : "たまの自動おしゃべりをオフにしたにゃ🔇");
+  };
+
   const handleCallFamily = () => {
     onShowNotification("家族のスマートフォンへ発信中だにゃ📞（モック動作）");
   };
@@ -139,6 +146,25 @@ export default function SettingsTab({
             <span>小さめ ({settings.voiceVolume}%)</span>
             <span>大きめ</span>
           </div>
+        </div>
+
+        {/* Voice Speech (Read Aloud Toggle) */}
+        <div className="bg-surface-container-lowest hand-drawn-border p-6 rounded-3xl flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Volume2 className="w-8 h-8 text-primary" />
+            <div>
+              <h3 className="text-xl font-black">たまの自動おしゃべり</h3>
+              <p className="text-sm font-bold text-outline">会話や健康アドバイスを自動で読み上げます</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSpeechToggle}
+            className={`w-16 h-10 rounded-full border-2 border-outline p-1 transition-colors duration-200 cursor-pointer ${settings.voiceSpeechEnabled !== false ? 'bg-primary' : 'bg-surface-container-high'}`}
+          >
+            <div
+              className={`w-7 h-7 rounded-full bg-white shadow-md border border-outline-variant transition-transform duration-200 ${settings.voiceSpeechEnabled !== false ? 'transform translate-x-6' : ''}`}
+            />
+          </button>
         </div>
 
         {/* Text Size */}
