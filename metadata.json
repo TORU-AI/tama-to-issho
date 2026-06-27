@@ -1,0 +1,6 @@
+{
+  "name": "たまといっしょ",
+  "description": "猫のキャラ「たま」が毎日ボケて、高齢者ユーザーがツッコむことで楽しく脳を刺激する見守り会話脳トレアプリ。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
